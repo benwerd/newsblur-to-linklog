@@ -109,6 +109,7 @@ let html = `
 <!doctype html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>
       Ben Werdmuller: Sources
     </title>
