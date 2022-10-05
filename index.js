@@ -72,19 +72,21 @@ for (let i = 0; i < unread_story_hashes.length; i += chunkSize) {
 }
 
 let page = 1;
-while (stories.length < 50 || page < 25) {
-  res = await superagent
-    .get('https://newsblur.com/reader/read_stories?page=' + page)
-    .set('User-Agent', "Benfeed")
-    .set('page', page)
-    .set('order', 'newest')
-    .set('cookie', cookie.use('newsblurCookie'));
-  res.body.stories.forEach(story => {
-    let feed = feeds[story.story_feed_id];
-    pushStory(story, feed, feeds);
-  });
-  page++;
-}
+
+if (stories.length < 100)
+  while (stories.length < 100 || page < 25) {
+    res = await superagent
+      .get('https://newsblur.com/reader/read_stories?page=' + page)
+      .set('User-Agent', "Benfeed")
+      .set('page', page)
+      .set('order', 'newest')
+      .set('cookie', cookie.use('newsblurCookie'));
+    res.body.stories.forEach(story => {
+      let feed = feeds[story.story_feed_id];
+      pushStory(story, feed, feeds);
+    });
+    page++;
+  }
 
 stories = stories.sort((a, b) => (a.timestamp < b.timestamp) ? 1 : -1).slice(0,100);
 
