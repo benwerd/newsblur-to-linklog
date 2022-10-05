@@ -120,11 +120,10 @@ let html = `
     <style>
       body {
         background: #fff;
-        width: 100%;
+        width: 85%;
         max-width: 760px;
         margin: auto;
         font-family: Merriweather,serif;
-        padding: 15px;
       }
       a {
         text-decoration: none;
