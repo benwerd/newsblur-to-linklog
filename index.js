@@ -51,30 +51,33 @@ res = await superagent
 
 let unread_story_hashes = res.body.unread_feed_story_hashes;
 
-if (Object.keys(unread_story_hashes).length > 0) {
-  let hashes = [];
-  Object.values(unread_story_hashes).forEach(list => {
-    list.forEach(hash => hashes.push(hash));
-  });
-  res = await superagent
-    .get('https://newsblur.com/reader/river_stories?h=' + hashes.join('&h='))
-    .set('User-Agent', "Benfeed")
-    .set('cookie', cookie.use('newsblurCookie'));
-
-  res.body.stories.forEach(story => {
-    let feed = feeds[story.story_feed_id];
-    pushStory(story, feed, feeds);
-  });
+const chunkSize = 100;
+for (let i = 0; i < unread_story_hashes.length; i += chunkSize) {
+    const story_hash_chunk = unread_story_hashes.slice(i, i + chunkSize);
+    if (Object.keys(story_hash_chunk).length > 0) {
+      let hashes = [];
+      Object.values(story_hash_chunk).forEach(list => {
+        list.forEach(hash => hashes.push(hash));
+      });
+      res = await superagent
+        .get('https://newsblur.com/reader/river_stories?h=' + hashes.join('&h='))
+        .set('User-Agent', "Benfeed")
+        .set('cookie', cookie.use('newsblurCookie'));
+    
+      res.body.stories.forEach(story => {
+        let feed = feeds[story.story_feed_id];
+        pushStory(story, feed, feeds);
+      });
+    }
 }
 
 let page = 1;
-while (stories.length < 50 || page < 8) {
+while (stories.length < 50 || page < 25) {
   res = await superagent
     .get('https://newsblur.com/reader/read_stories?page=' + page)
     .set('User-Agent', "Benfeed")
-    .set('read_filter', 'all')
     .set('page', page)
-    .set('include_hidden', true)
+    .set('order', 'newest')
     .set('cookie', cookie.use('newsblurCookie'));
   res.body.stories.forEach(story => {
     let feed = feeds[story.story_feed_id];
@@ -83,8 +86,7 @@ while (stories.length < 50 || page < 8) {
   page++;
 }
 
-stories.sort((a, b) => (a.timestamp < b.timestamp) ? 1 : -1);
-stories = stories.slice(0,50);
+stories = stories.sort((a, b) => (a.date < b.date) ? 1 : -1).slice(0,50);
 
 let last_generated = new Date().toLocaleDateString('en-us', { weekday:"long", year:"numeric", month:"short", day:"numeric"});
 last_generated += ' ' + new Date().toLocaleTimeString('en-US');
