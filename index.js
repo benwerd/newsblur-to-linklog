@@ -6,6 +6,27 @@ dotenv.config();
 let stories = [];
 let used_links = [];
 
+const pushStory = (story, feed, feeds) => {
+    if (
+      feeds[story.story_feed_id] && 
+      story.story_permalink.indexOf('newsblur.com') == -1 && 
+      story.story_permalink.indexOf('werd.io') == -1 &&
+      feed.feed_link.indexOf('werd.io') == -1 &&
+      !used_links.includes(story.story_permalink)) {
+        used_links.push(story.story_permalink);
+        stories.push({
+          title: story.story_title,
+          permalink: story.story_permalink,
+          date: story.story_date,
+          timestamp: story.story_timestamp,
+          feed: {
+            title: feed.feed_title,
+            link: feed.feed_link
+          }
+        });
+  }
+}
+
 let res = await superagent
   .post('https://newsblur.com/api/login')
   .send({username: process.env.NEWSBLUR_USERNAME, password: process.env.NEWSBLUR_PASSWORD})
@@ -42,24 +63,7 @@ if (Object.keys(unread_story_hashes).length > 0) {
 
   res.body.stories.forEach(story => {
     let feed = feeds[story.story_feed_id];
-    if (
-        feeds[story.story_feed_id] && 
-        story.story_permalink.indexOf('newsblur.com') == -1 && 
-        story.story_permalink.indexOf('werd.io') == -1 &&
-        feed.feed_link.indexOf('werd.io') == -1 &&
-        !used_links.includes(story.story_permalink)) {
-      used_links.push(story.story_permalink);
-      stories.push({
-        title: story.story_title,
-        permalink: story.story_permalink,
-        date: story.story_date,
-        timestamp: story.story_timestamp,
-        feed: {
-          title: feed.feed_title,
-          link: feed.feed_link
-        }
-      });
-    }
+    pushStory(story, feed, feeds);
   });
 }
 
@@ -75,24 +79,7 @@ while (stories.length < 50) {
   res.body.stories.forEach(story => {
     let feed = feeds[story.story_feed_id];
     if (stories.length >= 50) return;
-    if (
-        feeds[story.story_feed_id] && 
-        story.story_permalink.indexOf('newsblur.com') == -1 && 
-        story.story_permalink.indexOf('werd.io') == -1 &&
-        feed.feed_link.indexOf('werd.io') == -1 && 
-        !used_links.includes(story.story_permalink)) {
-      used_links.push(story.story_permalink);
-      stories.push({
-        title: story.story_title,
-        permalink: story.story_permalink,
-        date: story.story_date,
-        timestamp: story.story_timestamp,
-        feed: {
-          title: feed.feed_title,
-          link: feed.feed_link
-        }
-      });
-    }
+    pushStory(story, feed, feeds);
   });
   if (stories.length >= 50) break;
   page++;
