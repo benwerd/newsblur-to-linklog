@@ -53,7 +53,7 @@ let unread_story_hashes = res.body.unread_feed_story_hashes;
 
 if (Object.keys(unread_story_hashes).length > 0) {
   let hashes = [];
-  Object.values(unread_story_hashes).slice(0,50).forEach(list => {
+  Object.values(unread_story_hashes).forEach(list => {
     list.forEach(hash => hashes.push(hash));
   });
   res = await superagent
@@ -68,7 +68,7 @@ if (Object.keys(unread_story_hashes).length > 0) {
 }
 
 let page = 1;
-while (stories.length < 50) {
+while (stories.length < 50 || page < 8) {
   res = await superagent
     .get('https://newsblur.com/reader/read_stories?page=' + page)
     .set('User-Agent', "Benfeed")
@@ -78,15 +78,14 @@ while (stories.length < 50) {
     .set('cookie', cookie.use('newsblurCookie'));
   res.body.stories.forEach(story => {
     let feed = feeds[story.story_feed_id];
-    if (stories.length >= 50) return;
     pushStory(story, feed, feeds);
   });
-  if (stories.length >= 50) break;
   page++;
 }
 
-stories.sort((a, b) => (a.timestamp < b.timestamp) ? 1 : -1)
-new Date().toLocaleTimeString()
+stories.sort((a, b) => (a.timestamp < b.timestamp) ? 1 : -1);
+stories = stories.slice(0,50);
+
 let last_generated = new Date().toLocaleDateString('en-us', { weekday:"long", year:"numeric", month:"short", day:"numeric"});
 last_generated += ' ' + new Date().toLocaleTimeString('en-US');
 let storylinks = '';
