@@ -92,12 +92,15 @@ last_generated += ' ' + new Date().toLocaleTimeString('en-US');
 let storylinks = '';
 
 stories.forEach(story => {
+  let published = new Date(story.timestamp * 1000);
+  let dateline = published.toLocaleDateString('en-us', { weekday:"long", year:"numeric", month:"short", day:"numeric"});
+  dateline += ' ' + published.toLocaleTimeString('en-US');
   storylinks += `
 <h3>
   <a href="${story.permalink}">${story.title}</a>
 </h3>
 <p>
-  <a href="${story.feed.link}">${story.feed.title}</a>
+  <a href="${story.feed.link}">${story.feed.title}</a><a href="${story.permalink}">, ${dateline}</a>
 </p>
 `;
 })
@@ -139,6 +142,9 @@ let html = `
       }
       p a {
         color: #999;
+      }
+      p a:hover {
+        color: #666;
       }
       .time {
         border: 0;
