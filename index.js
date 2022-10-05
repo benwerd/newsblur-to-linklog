@@ -18,7 +18,7 @@ const pushStory = (story, feed, feeds) => {
           title: story.story_title,
           permalink: story.story_permalink,
           date: story.story_date,
-          timestamp: story.story_timestamp,
+          timestamp: parseInt(story.story_timestamp),
           feed: {
             title: feed.feed_title,
             link: feed.feed_link
@@ -49,7 +49,7 @@ res = await superagent
   .set('include_timestamps', 'true')
   .set('cookie', cookie.use('newsblurCookie'));
 
-let unread_story_hashes = res.body.unread_feed_story_hashes;
+let unread_story_hashes = Object.values(res.body.unread_feed_story_hashes);
 
 const chunkSize = 100;
 for (let i = 0; i < unread_story_hashes.length; i += chunkSize) {
@@ -86,7 +86,7 @@ while (stories.length < 50 || page < 25) {
   page++;
 }
 
-stories = stories.sort((a, b) => (a.date < b.date) ? 1 : -1).slice(0,50);
+stories = stories.sort((a, b) => (a.timestamp < b.timestamp) ? 1 : -1).slice(0,100);
 
 let last_generated = new Date().toLocaleDateString('en-us', { weekday:"long", year:"numeric", month:"short", day:"numeric"});
 last_generated += ' ' + new Date().toLocaleTimeString('en-US');
