@@ -166,11 +166,11 @@ let html = `
   <body>
     <h1>Sources</h1>
     <p class="time">
-      <em>As of ${last_generated}</em>
+      <em>The latest posts from <a href="https://werd.io" rel="me">my</a> subscriptions, as of ${last_generated}.</em>
     </p>
     ${storylinks}
     <footer>
-      <a href="https://werd.io">By Ben Werdmuller</a>
+      <a href="https://werd.io" rel="me">By Ben Werdmuller</a>
     </footer>
   </body>
 </html>
