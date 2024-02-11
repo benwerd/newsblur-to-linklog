@@ -43,50 +43,23 @@ res = await superagent
 
 let feeds = res.body.feeds;
 
-res = await superagent
-  .get('https://newsblur.com/reader/unread_story_hashes')
-  .set('User-Agent', "Benfeed")
-  .set('include_timestamps', 'true')
-  .set('cookie', cookie.use('newsblurCookie'));
-
-let unread_story_hashes = Object.values(res.body.unread_feed_story_hashes);
-
-const chunkSize = 100;
-for (let i = 0; i < unread_story_hashes.length; i += chunkSize) {
-    const story_hash_chunk = unread_story_hashes.slice(i, i + chunkSize);
-    if (Object.keys(story_hash_chunk).length > 0) {
-      let hashes = [];
-      Object.values(story_hash_chunk).forEach(list => {
-        list.forEach(hash => hashes.push(hash));
-      });
-      res = await superagent
-        .get('https://newsblur.com/reader/river_stories?h=' + hashes.join('&h='))
-        .set('User-Agent', "Benfeed")
-        .set('cookie', cookie.use('newsblurCookie'));
-    
-      res.body.stories.forEach(story => {
-        let feed = feeds[story.story_feed_id];
-        pushStory(story, feed, feeds);
-      });
-    }
-}
-
 let page = 1;
 
-if (stories.length < 100)
-  while (stories.length < 100 || page < 25) {
-    res = await superagent
-      .get('https://newsblur.com/reader/read_stories?page=' + page)
-      .set('User-Agent', "Benfeed")
-      .set('page', page)
-      .set('order', 'newest')
-      .set('cookie', cookie.use('newsblurCookie'));
-    res.body.stories.forEach(story => {
-      let feed = feeds[story.story_feed_id];
-      pushStory(story, feed, feeds);
-    });
-    page++;
-  }
+while(stories.length < 100 || page < 25) {
+
+  res = await superagent
+    .get('https://newsblur.com/reader/river_stories?read_filter=all&page=' + page)
+    .set('User-Agent', "Benfeed")
+    .set('cookie', cookie.use('newsblurCookie'));
+
+  res.body.stories.forEach(story => {
+    console.log(story); process.exit();
+    let feed = feeds[story.story_feed_id];
+    pushStory(story, feed, feeds);
+  });
+  page++;
+
+}
 
 stories = stories.sort((a, b) => (a.timestamp < b.timestamp) ? 1 : -1).slice(0,100);
 
