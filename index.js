@@ -53,7 +53,6 @@ while(stories.length < 100 || page < 25) {
     .set('cookie', cookie.use('newsblurCookie'));
 
   res.body.stories.forEach(story => {
-    console.log(story); process.exit();
     let feed = feeds[story.story_feed_id];
     pushStory(story, feed, feeds);
   });
